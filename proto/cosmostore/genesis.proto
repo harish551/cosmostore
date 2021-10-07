@@ -1,0 +1,11 @@
+syntax = "proto3";
+package harish551.cosmostore.cosmostore;
+
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/harish551/cosmostore/x/cosmostore/types";
+
+// GenesisState defines the cosmostore module's genesis state.
+message GenesisState {
+    // this line is used by starport scaffolding # genesis/proto/state
+}
