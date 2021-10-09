@@ -1,0 +1,23 @@
+syntax = "proto3";
+package harish551.cosmostore.store;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/harish551/cosmostore/x/store/types";
+
+// Msg defines the Msg service.
+service Msg {
+      rpc MintItem(MsgMintItem) returns (MsgMintItemResponse);
+// this line is used by starport scaffolding # proto/tx/rpc
+}
+
+message MsgMintItem {
+  string creator = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message MsgMintItemResponse {
+}
+
+// this line is used by starport scaffolding # proto/tx/message

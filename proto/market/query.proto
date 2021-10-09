@@ -1,0 +1,44 @@
+syntax = "proto3";
+package harish551.cosmostore.market;
+
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "market/market_item.proto";
+// this line is used by starport scaffolding # 1
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/harish551/cosmostore/x/market/types";
+
+// Query defines the gRPC querier service.
+service Query {
+    // Queries a marketItem by id.
+	rpc MarketItem(QueryGetMarketItemRequest) returns (QueryGetMarketItemResponse) {
+		option (google.api.http).get = "/harish551/cosmostore/market/marketItem/{id}";
+	}
+
+	// Queries a list of marketItem items.
+	rpc MarketItemAll(QueryAllMarketItemRequest) returns (QueryAllMarketItemResponse) {
+		option (google.api.http).get = "/harish551/cosmostore/market/marketItem";
+	}
+
+// this line is used by starport scaffolding # 2
+}
+
+message QueryGetMarketItemRequest {
+	uint64 id = 1;
+}
+
+message QueryGetMarketItemResponse {
+	MarketItem MarketItem = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllMarketItemRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllMarketItemResponse {
+	repeated MarketItem MarketItem = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// this line is used by starport scaffolding # 3

@@ -1,0 +1,15 @@
+syntax = "proto3";
+package harish551.cosmostore.store;
+
+import "store/item.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/harish551/cosmostore/x/store/types";
+
+// GenesisState defines the store module's genesis state.
+message GenesisState {
+    repeated Item itemList = 1 [(gogoproto.nullable) = false];
+  uint64 itemCount = 2;
+  // this line is used by starport scaffolding # genesis/proto/state
+}
