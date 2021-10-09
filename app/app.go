@@ -88,9 +88,12 @@ import (
 
 	"github.com/harish551/cosmostore/docs"
 
-	cosmostoremodule "github.com/harish551/cosmostore/x/cosmostore"
-	cosmostoremodulekeeper "github.com/harish551/cosmostore/x/cosmostore/keeper"
-	cosmostoremoduletypes "github.com/harish551/cosmostore/x/cosmostore/types"
+	marketmodule "github.com/harish551/cosmostore/x/market"
+	marketmodulekeeper "github.com/harish551/cosmostore/x/market/keeper"
+	marketmoduletypes "github.com/harish551/cosmostore/x/market/types"
+	storemodule "github.com/harish551/cosmostore/x/store"
+	storemodulekeeper "github.com/harish551/cosmostore/x/store/keeper"
+	storemoduletypes "github.com/harish551/cosmostore/x/store/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -141,7 +144,8 @@ var (
 		evidence.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-		cosmostoremodule.AppModuleBasic{},
+		storemodule.AppModuleBasic{},
+		marketmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -154,6 +158,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		marketmoduletypes.ModuleName:   {authtypes.Minter, authtypes.Burner, authtypes.Staking},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 )
@@ -210,7 +215,9 @@ type App struct {
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 
-	CosmostoreKeeper cosmostoremodulekeeper.Keeper
+	StoreKeeper storemodulekeeper.Keeper
+
+	MarketKeeper marketmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// the module manager
@@ -244,7 +251,8 @@ func New(
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
-		cosmostoremoduletypes.StoreKey,
+		storemoduletypes.StoreKey,
+		marketmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -343,12 +351,23 @@ func New(
 		&stakingKeeper, govRouter,
 	)
 
-	app.CosmostoreKeeper = *cosmostoremodulekeeper.NewKeeper(
+	app.StoreKeeper = *storemodulekeeper.NewKeeper(
 		appCodec,
-		keys[cosmostoremoduletypes.StoreKey],
-		keys[cosmostoremoduletypes.MemStoreKey],
+		keys[storemoduletypes.StoreKey],
+		keys[storemoduletypes.MemStoreKey],
 	)
-	cosmostoreModule := cosmostoremodule.NewAppModule(appCodec, app.CosmostoreKeeper)
+	storeModule := storemodule.NewAppModule(appCodec, app.StoreKeeper)
+
+	app.MarketKeeper = *marketmodulekeeper.NewKeeper(
+		appCodec,
+		keys[marketmoduletypes.StoreKey],
+		keys[marketmoduletypes.MemStoreKey],
+
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.StoreKeeper,
+	)
+	marketModule := marketmodule.NewAppModule(appCodec, app.MarketKeeper)
 
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
@@ -388,7 +407,8 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
-		cosmostoreModule,
+		storeModule,
+		marketModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -423,7 +443,8 @@ func New(
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
-		cosmostoremoduletypes.ModuleName,
+		storemoduletypes.ModuleName,
+		marketmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -611,7 +632,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	paramsKeeper.Subspace(cosmostoremoduletypes.ModuleName)
+	paramsKeeper.Subspace(storemoduletypes.ModuleName)
+	paramsKeeper.Subspace(marketmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
